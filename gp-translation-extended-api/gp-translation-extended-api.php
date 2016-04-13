@@ -151,7 +151,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 			}
 
 			$data = compact('original_id');
-			$data['user_id'] = GP::$user->current()->id;
+			$data['user_id'] = get_current_user_id();
 			$data['translation_set_id'] = $translation_set->id;
 
 			foreach( range( 0, GP::$translation->get_static( 'number_of_plural_translations' ) ) as $i ) {
@@ -225,7 +225,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 	}
 
 	private function can_approve_translation_or_forbidden( $translation ) {
-		$can_reject_self = ( GP::$user->current()->id == $translation->user_id && $translation->status == "waiting" );
+		$can_reject_self = ( get_current_user_id() == $translation->user_id && $translation->status == "waiting" );
 		if ( $can_reject_self ) {
 			return;
 		}
@@ -233,14 +233,14 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 	}
 
 	private function translation_record_by_id( $translation_id ) {
-		global $gpdb;
-		return $gpdb->get_results( $gpdb->prepare( "SELECT * FROM $gpdb->translations WHERE id = %d", $translation_id ) );
+		global $wpdb;
+		return $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->translations WHERE id = %d", $translation_id ) );
 	}
 
 	// A slightly modified version og GP_Original->by_project_id_and_entry without the BINARY search keyword
 	// to make sure the index on the gp_originals table is used
 	private function by_project_id_and_entry( $project_id, $entry, $status = "+active" ) {
-		global $gpdb;
+		global $wpdb;
 
 		$entry->plural  = isset( $entry->plural ) ? $entry->plural : null;
 		$entry->context = isset( $entry->context ) ? $entry->context : null;
@@ -251,7 +251,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 		$where[] = 'singular = %s';
 		$where[] = is_null( $entry->plural ) ? '(plural IS NULL OR %s IS NULL)' : 'plural = %s';
 		$where[] = 'project_id = %d';
-		$where[] = $gpdb->prepare( 'status = %s', $status );
+		$where[] = $wpdb->prepare( 'status = %s', $status );
 
 		$where = implode( ' AND ', $where );
 
@@ -278,9 +278,8 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 	}
 }
 
-class GP_Translation_Extended_API_Loader extends GP_Plugin {
-	function __construct() {
-		parent::__construct();
+class GP_Translation_Extended_API_Loader {
+	function init() {
 		$this->init_new_routes();
 	}
 
@@ -294,4 +293,5 @@ class GP_Translation_Extended_API_Loader extends GP_Plugin {
 	}
 }
 
-GP::$plugins->translation_extended_api = new GP_Translation_Extended_API_Loader();
+$gp_translation_extended_api = new GP_Translation_Extended_API_Loader();
+add_action( 'gp_init', array( $gp_translation_extended_api, 'init' ) );
