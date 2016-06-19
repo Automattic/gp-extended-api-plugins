@@ -180,7 +180,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 				$this->die_with_error( $error_output, 422 );
 			}
 
-			do_action( 'extended_api_save', $project, $locale, $translation );
+			do_action( 'gp_extended_api_save', $project, $locale, $translation );
 
 			if ( 'current' == $data['status'] ) {
 				$translation->set_status( 'current' );
