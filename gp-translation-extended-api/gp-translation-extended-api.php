@@ -17,6 +17,55 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 		$this->tmpl( 'status-ok' );
 	}
 
+	function translation_get_untranslated_language() {
+		if ( ! $this->api ) {
+			$this->die_with_error( __( "Yer not 'spose ta be here." ), 403 );
+		}
+
+		$project_path          	= gp_get( 'project' );
+		$locale_slug           	= gp_get( 'locale_slug' );
+		$translation_set_slug  	= gp_get( 'translation_set_slug', 'default' );
+
+		if ( ! $project_path || ! $locale_slug || ! $translation_set_slug ) {
+			$this->die_with_404();
+		}
+
+		$filters = array(
+			'status' => 'untranslated'
+		);
+		$sort = array(
+			'by' => 'priority',
+			'how' => 'desc',
+		);
+		$page = 1;
+		$locale = GP_Locales::by_slug( $locale_slug );
+
+		GP::$translation->per_page = 5;
+
+
+		$project = GP::$project->by_path( $project_path );
+		$translation_set = GP::$translation_set->by_project_id_slug_and_locale( $project->id, $translation_set_slug, $locale_slug );
+		$translations = GP::$translation->for_translation( $project, $translation_set, $page, $filters, $sort );
+
+		$result = new stdClass();
+		$result->all_count 			= $translation_set->all_count();
+		$result->country_code 		= $locale->country_code;
+		$result->current_count 		= $translation_set->current_count();
+		$result->fuzzy_count 		= $translation_set->fuzzy_count();
+		$result->language_name 		= $locale->native_name;
+		$result->language_name_en 	= $locale->english_name;
+		$result->last_modified 		= $translation_set->current_count ? $translation_set->last_modified() : false;
+		$result->percent_translated = $translation_set->percent_translated();
+		$result->slug 				= $locale->slug;
+		$result->translations 		= $translations;
+		$result->untranslated_count = $translation_set->untranslated_count();
+		$result->waiting_count 		= $translation_set->waiting_count();
+		$result->wp_locale			= $locale->wp_locale;
+
+		$translations = $result;
+		$this->tmpl( 'translations-extended', get_defined_vars(), true );
+	}
+
 	function translations_get_by_originals() {
 		if ( ! $this->api ) {
 			$this->die_with_error( __( "Yer not 'spose ta be here." ), 403 );
@@ -290,6 +339,8 @@ class GP_Translation_Extended_API_Loader {
 		GP::$router->add( '/translations/(\d+)/-set-status', array( 'GP_Route_Translation_Extended', 'translations_options_ok' ), 'options' );
 		GP::$router->add( '/translations/-query-by-originals', array( 'GP_Route_Translation_Extended', 'translations_get_by_originals' ), 'post' );
 		GP::$router->add( '/translations/-query-by-originals', array( 'GP_Route_Translation_Extended', 'translations_options_ok' ), 'options' );
+		GP::$router->add( '/translations/-translation-set', array( 'GP_Route_Translation_Extended', 'translation_get_untranslated_language' ), 'get' );
+		GP::$router->add( '/translations/-translation-set', array( 'GP_Route_Translation_Extended', 'translations_options_ok' ), 'options' );
 	}
 }
 
