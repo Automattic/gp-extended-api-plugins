@@ -17,6 +17,11 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 		$this->tmpl( 'status-ok' );
 	}
 
+	/**
+	 * Gets translation set by project and locale slug, and returns counts and
+	 * an array of untranslated strings (up to the number defined in GP::$translation->per_page)
+	 *
+	 */
 	function translation_get_untranslated_language() {
 		if ( ! $this->api ) {
 			$this->die_with_error( __( "Yer not 'spose ta be here." ), 403 );
@@ -40,27 +45,24 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 		$page = 1;
 		$locale = GP_Locales::by_slug( $locale_slug );
 
-		GP::$translation->per_page = 5;
-
-
 		$project = GP::$project->by_path( $project_path );
 		$translation_set = GP::$translation_set->by_project_id_slug_and_locale( $project->id, $translation_set_slug, $locale_slug );
 		$translations = GP::$translation->for_translation( $project, $translation_set, $page, $filters, $sort );
 
 		$result = new stdClass();
-		$result->all_count 			= $translation_set->all_count();
-		$result->country_code 		= $locale->country_code;
-		$result->current_count 		= $translation_set->current_count();
-		$result->fuzzy_count 		= $translation_set->fuzzy_count();
-		$result->language_name 		= $locale->native_name;
-		$result->language_name_en 	= $locale->english_name;
-		$result->last_modified 		= $translation_set->current_count ? $translation_set->last_modified() : false;
-		$result->percent_translated = $translation_set->percent_translated();
-		$result->slug 				= $locale->slug;
-		$result->translations 		= $translations;
-		$result->untranslated_count = $translation_set->untranslated_count();
-		$result->waiting_count 		= $translation_set->waiting_count();
-		$result->wp_locale			= $locale->wp_locale;
+		$result->all_count 					= $translation_set->all_count();
+		$result->country_code 				= $locale->country_code;
+		$result->current_count 				= $translation_set->current_count();
+		$result->fuzzy_count 				= $translation_set->fuzzy_count();
+		$result->language_name 				= $locale->native_name;
+		$result->language_name_en 			= $locale->english_name;
+		$result->last_modified 				= $translation_set->current_count ? $translation_set->last_modified() : false;
+		$result->percent_translated 		= $translation_set->percent_translated();
+		$result->slug 						= $locale->slug;
+		$result->untranslated_strings		= $translations;
+		$result->untranslated_count 		= $translation_set->untranslated_count();
+		$result->waiting_count 				= $translation_set->waiting_count();
+		$result->wp_locale					= $locale->wp_locale;
 
 		$translations = $result;
 		$this->tmpl( 'translations-extended', get_defined_vars(), true );
