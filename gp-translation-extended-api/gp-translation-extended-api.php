@@ -22,7 +22,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 	 * an array of untranslated strings (up to the number defined in GP::$translation->per_page)
 	 *
 	 */
-	function translation_get_untranslated_language() {
+	function translations_get_untranslated_strings_by_locale() {
 		if ( ! $this->api ) {
 			$this->die_with_error( __( "Yer not 'spose ta be here." ), 403 );
 		}
@@ -341,8 +341,8 @@ class GP_Translation_Extended_API_Loader {
 		GP::$router->add( '/translations/(\d+)/-set-status', array( 'GP_Route_Translation_Extended', 'translations_options_ok' ), 'options' );
 		GP::$router->add( '/translations/-query-by-originals', array( 'GP_Route_Translation_Extended', 'translations_get_by_originals' ), 'post' );
 		GP::$router->add( '/translations/-query-by-originals', array( 'GP_Route_Translation_Extended', 'translations_options_ok' ), 'options' );
-		GP::$router->add( '/translations/-translation-set', array( 'GP_Route_Translation_Extended', 'translation_get_untranslated_language' ), 'get' );
-		GP::$router->add( '/translations/-translation-set', array( 'GP_Route_Translation_Extended', 'translations_options_ok' ), 'options' );
+		GP::$router->add( '/translations/-untranslated-by-locale', array( 'GP_Route_Translation_Extended', 'translations_get_untranslated_strings_by_locale' ), 'get' );
+		GP::$router->add( '/translations/-untranslated-by-locale', array( 'GP_Route_Translation_Extended', 'translations_get_untranslated_strings_by_locale' ), 'options' );
 	}
 }
 
