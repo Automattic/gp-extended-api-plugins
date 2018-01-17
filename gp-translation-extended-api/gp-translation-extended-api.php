@@ -20,6 +20,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 	/**
 	 * Gets translation set by project and locale slug, and returns counts and
 	 * an array of untranslated strings (up to the number defined in GP::$translation->per_page)
+	 * Example GET string: https://translate.wordpress.com/api/translations/-untranslated-by-locale?translation_set_slug=default&locale_slug=ta&project=wpcom&view=calypso
 	 *
 	 */
 	function translations_get_untranslated_strings_by_locale() {
@@ -29,6 +30,7 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 
 		$project_path          	= gp_get( 'project' );
 		$locale_slug           	= gp_get( 'locale_slug' );
+		$project_view           = gp_get( 'view', null );
 		$translation_set_slug  	= gp_get( 'translation_set_slug', 'default' );
 
 		if ( ! $project_path || ! $locale_slug || ! $translation_set_slug ) {
@@ -36,8 +38,9 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 		}
 
 		$filters = array(
-			'status' => 'untranslated'
+			'status' 	=> 'untranslated',
 		);
+
 		$sort = array(
 			'by' => 'priority',
 			'how' => 'desc',
@@ -48,6 +51,11 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 		$project = GP::$project->by_path( $project_path );
 		$translation_set = GP::$translation_set->by_project_id_slug_and_locale( $project->id, $translation_set_slug, $locale_slug );
 		$translations = GP::$translation->for_translation( $project, $translation_set, $page, $filters, $sort );
+
+		if ( $project_view && class_exists( 'GP_Views' ) ) {
+			$gp_plugin_views = GP_Views::get_instance();
+			$gp_plugin_views->set_project_id( $project->id );
+		}
 
 		$result = new stdClass();
 		$result->all_count 					= $translation_set->all_count();
@@ -348,3 +356,4 @@ class GP_Translation_Extended_API_Loader {
 
 $gp_translation_extended_api = new GP_Translation_Extended_API_Loader();
 add_action( 'gp_init', array( $gp_translation_extended_api, 'init' ) );
+
