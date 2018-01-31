@@ -265,19 +265,19 @@ class GP_Route_Translation_Extended extends GP_Route_Main {
 
 		$translation = GP::$translation->get( $translation_id );
 		if ( ! $translation ) {
-			$this->die_with_error( 'Translation doesn&#8217;t exist!' );
+			$this->die_with_error( 'Translation doesn&#8217;t exist!', 404 );
 		}
 
 		$this->can_approve_translation_or_forbidden( $translation );
 
 		$result = $translation->set_status( gp_post( 'status' ) );
 		if ( ! $result ) {
-			$this->die_with_error( 'Error in saving the translation status!' );
+			$this->die_with_error( 'Error in saving the translation status!', 409 );
 		}
 
 		$translations = $this->translation_record_by_id( $translation_id );
 		if ( ! $translations ) {
-			$this->die_with_error( 'Error in retrieving translation record!' );
+			$this->die_with_error( 'Error in retrieving translation record!', 409 );
 		}
 
 		$this->tmpl( 'translations-extended', get_defined_vars() );
